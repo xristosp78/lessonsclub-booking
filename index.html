@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Εισαγωγή Κωδικού</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      margin: 0;
+      background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.95)), 
+        url('https://i.ibb.co/whC6gh3j/f0149849-4a14-49f6-a5c5-8a65ea1c9e45.png') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: #ffffffef;
+      max-width: 400px;
+      width: 90%;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      color: #004080;
+      margin-bottom: 15px;
+      font-size: 1.6em;
+    }
+
+    p {
+      font-size: 0.95em;
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      transition: border 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #007acc;
+      outline: none;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    .error {
+      color: #cc0000;
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Εισαγωγή Κωδικού Πρόσβασης</h2>
+    <p>Παρακαλώ πληκτρολογήστε τον μοναδικό κωδικό σας για να συνεχίσετε.</p>
+
+    <div id="errorBox" class="error" style="display:none;">❌ Ο κωδικός δεν είναι έγκυρος. Δοκιμάστε ξανά.</div>
+
+    <form onsubmit="redirectToForm(event)">
+      <input type="text" id="codeInput" placeholder="Κωδικός" required />
+      <button type="submit">Συνέχεια</button>
+    </form>
+  </div>
+
+  <script>
+  const scriptURL = "https://script.google.com/macros/s/AKfycbx4wFb8zKR0r8PDp7EoAXSFpxE7hDumN1myMpELwsvTgGFzkSvRWp8fdkHSjwhW87uvTg/exec";
+
+  async function redirectToForm(e) {
+    e.preventDefault();
+    const code = document.getElementById('codeInput').value.trim().toUpperCase();
+    if (!code) return;
+
+    try {
+      const res = await fetch(`${scriptURL}?action=verifyAccessCode&code=${code}`);
+      const isValid = await res.text();
+
+      if (isValid === 'true') {
+        window.location.href = `booking.html?code=${encodeURIComponent(code)}`;
+      } else {
+        document.getElementById('errorBox').style.display = 'block';
+      }
+    } catch (err) {
+      alert("❌ Σφάλμα κατά τον έλεγχο του κωδικού.");
+    }
+  }
+</script>
+
+</body>
+</html>

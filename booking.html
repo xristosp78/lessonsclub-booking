@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Φόρμα Επικοινωνίας</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: #fff url('https://i.ibb.co/whC6gh3j/f0149849-4a14-49f6-a5c5-8a65ea1c9e45.png') no-repeat center center;
+      background-size: contain;
+      background-attachment: fixed;
+    }
+    .page-wrapper {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .form-container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      max-width: 500px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    h2 {
+      text-align: center;
+      color: #004080;
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: 600;
+      color: #222;
+    }
+    label small {
+      display: block;
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    select, input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1.8px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+      background-color: #fafafa;
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    button {
+      margin-top: 30px;
+      padding: 12px;
+      width: 100%;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    .copyright {
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-align: center;
+      margin-top: 20px;
+      color: #004080;
+    }
+    @media (max-width: 520px) {
+      .form-container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="form-container">
+      <h2>Φόρμα Επικοινωνίας για Διαθεσιμότητα Μαθημάτων<br><small>Lesson Availability Request Form</small></h2>
+
+      <form id="bookingForm">
+        <input type="hidden" id="accessCode" name="accessCode" />
+
+        <label for="teacherSelect">Επιλέξτε Καθηγητή: <small>Select Tutor</small></label>
+        <select id="teacherSelect" name="teacher" required>
+          <option disabled selected></option>
+        </select>
+
+        <label for="dateSelect">Επιλέξτε Ημερομηνία: <small>Choose a Date</small></label>
+        <select id="dateSelect" name="date" required>
+          <option disabled selected></option>
+        </select>
+
+        <label for="timeSelect">Διαθέσιμη Ώρα: <small>Available Time Slot</small></label>
+        <select id="timeSelect" name="time" required>
+          <option disabled selected></option>
+        </select>
+
+        <label for="desiredHours">Ποια ώρα προτιμάτε;</label>
+        <textarea id="desiredHours" name="desiredHours" required></textarea>
+
+        <label for="clientName">Το Όνομά σας:</label>
+        <input type="text" id="clientName" name="clientName" required />
+
+        <label for="clientEmail">Το Email σας:</label>
+        <input type="email" id="clientEmail" name="clientEmail" required />
+
+        <button type="submit">Υποβολή Αίτησης<br><small>Submit Request</small></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="copyright">
+    © 2025 Lessonsclub.com — Ιδιαίτερα Διαδικτυακά Μαθήματα!
+  </div>
+
+<script>
+  const scriptURL = "/submit-form";
+
+
+
+  async function loadTeachers() {
+    const res = await fetch(`${scriptURL}?action=getAllTeachers`);
+    const teachers = await res.json();
+    const select = document.getElementById("teacherSelect");
+    select.innerHTML = `<option disabled selected>Επιλέξτε Καθηγητή</option>`;
+    teachers.forEach(t => {
+      const option = document.createElement("option");
+      option.value = t.code;
+      option.textContent = `${t.code} - ${t.name}`;
+      select.appendChild(option);
+    });
+  }
+
+  async function loadDates(teacherCode) {
+  const res = await fetch(`${scriptURL}?action=getAvailableDates&teacherCode=${encodeURIComponent(teacherCode)}`);
+  const dates = await res.json();
+
+  const select = document.getElementById("dateSelect");
+  select.innerHTML = `<option disabled selected>Επιλέξτε Ημερομηνία</option>`;
+  dates.forEach(date => {
+    const option = document.createElement("option");
+    option.value = date;
+    option.textContent = date; // 👈 εδώ μην το αλλάζεις σε μορφή τύπου "Sat 05/07"
+    select.appendChild(option);
+  });
+}
+
+
+  async function loadAvailableTimes() {
+    const teacherCode = document.getElementById("teacherSelect").value;
+    const dateStr = document.getElementById("dateSelect").value;
+    const res = await fetch(`${scriptURL}?action=getAvailableTimes&teacherCode=${encodeURIComponent(teacherCode)}&date=${encodeURIComponent(dateStr)}`);
+    const times = await res.json();
+    const select = document.getElementById("timeSelect");
+    select.innerHTML = `<option disabled selected>Επιλέξτε Ώρα</option>`;
+    times.forEach(time => {
+      const option = document.createElement("option");
+      option.value = time;
+      option.textContent = time;
+      select.appendChild(option);
+    });
+  }
+
+  document.getElementById("teacherSelect").addEventListener("change", function () {
+    loadDates(this.value);
+  });
+
+  document.getElementById("dateSelect").addEventListener("change", loadAvailableTimes);
+
+ document.getElementById("bookingForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const data = {
+    action: "submitForm",
+    teacherCode: document.getElementById('teacherSelect').value,
+    teacherName: document.getElementById('teacherSelect').selectedOptions[0].textContent.split(' - ')[1],
+    selectedDate: document.getElementById('dateSelect').value,
+    selectedTime: document.getElementById('timeSelect').value,
+    desiredHours: document.getElementById('desiredHours').value,
+    clientName: document.getElementById('clientName').value,
+    clientEmail: document.getElementById('clientEmail').value,
+    accessCode: document.getElementById('accessCode').value.trim(),
+  };
+
+  try {
+    const res = await fetch("/submit-form", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await res.json();
+    alert(result.message || "✅ Επιτυχής αποστολή!");
+    document.getElementById("bookingForm").reset();
+    loadTeachers();
+  } catch (err) {
+    alert("⚠️ Σφάλμα κατά την αποστολή. Δοκιμάστε ξανά.");
+  }
+});
+
+
+
+  window.addEventListener("DOMContentLoaded", function () {
+    const params = new URLSearchParams(window.location.search);
+    const accessCode = params.get("code") || "";
+    document.getElementById("accessCode").value = accessCode.trim().toUpperCase();
+    loadTeachers();
+  });
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

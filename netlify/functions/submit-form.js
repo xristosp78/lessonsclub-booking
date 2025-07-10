@@ -1,42 +1,67 @@
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 
-exports.handler = async function(event) {
+exports.handler = async function (event, context) {
   const method = event.httpMethod;
   const query = new URLSearchParams(event.queryStringParameters);
-  const action = query.get("action");
-
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbx4wFb8zKR0r8PDp7EoAXSFpxE7hDumN1myMpELwsvTgGFzkSvRWp8fdkHSjwhW87uvTg/exec";
-
-  if (!action) {
-    return { statusCode: 400, body: "❌ Missing action" };
-  }
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyjvQXutWHk-.../exec"; // 🔁 Βάλε το δικό σου URL εδώ
 
   try {
     if (method === "GET") {
       const res = await fetch(`${GAS_URL}?${query.toString()}`);
-      const text = await res.text();
-      return { statusCode: 200, body: text };
+
+      if (!res.ok) {
+        return {
+          statusCode: 502,
+          body: JSON.stringify({ error: "Failed to fetch from Google Apps Script" }),
+        };
+      }
+
+      const data = await res.json(); // 👈 Σωστή μετατροπή από response σε JSON
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
     }
 
+    // ✉️ Υποβολή φόρμας (POST)
     if (method === "POST") {
       const body = JSON.parse(event.body);
-      const form = new URLSearchParams();
-
-      Object.entries(body).forEach(([k, v]) => form.append(k, v));
-      form.append("action", "submitForm");
+      const form = new URLSearchParams(body);
 
       const res = await fetch(GAS_URL, {
         method: "POST",
         body: form,
       });
 
-      const text = await res.text();
-      return { statusCode: 200, body: JSON.stringify({ message: text }) };
+      if (!res.ok) {
+        return {
+          statusCode: 502,
+          body: JSON.stringify({ error: "Failed to submit form" }),
+        };
+      }
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ success: true }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
     }
 
-    return { statusCode: 405, body: "❌ Method not allowed" };
-  } catch (err) {
-    return { statusCode: 500, body: `❌ Server Error: ${err.message}` };
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: "Method not allowed" }),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message }),
+    };
   }
 };
 

@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 exports.handler = async function (event, context) {
   const method = event.httpMethod;
   const query = new URLSearchParams(event.queryStringParameters);
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbx3oZZrLojE-3fO3qm3au2T9dZh7bQOddQITAn2RvqQtAqNbjbJB4n_e_fWJ70rMBj4/exec"; // 🔁 Βάλε το δικό σου URL εδώ
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxGS37crq9VLVn6F_1Myjvnk5y2fGSUIGuOJP9irVdPHJiRWQAY-sz2oN_GDr7GA_1p/exec"; // 🔁 Βάλε το δικό σου URL εδώ
 
   try {
     if (method === "GET") {
